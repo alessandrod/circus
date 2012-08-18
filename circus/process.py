@@ -151,7 +151,8 @@ class Process(object):
             'env': current_env, 'working_dir': self.working_dir,
             'uid': self.uid, 'gid': self.gid, 'rlimits': self.rlimits,
             'executable': self.executable, 'use_fds': self.use_fds,
-            'hostname': socket.gethostname()}
+            'hostname': socket.gethostname(),
+            'sockets': self.watcher._get_sockets_fds()}
 
         if self.watcher is not None:
             format_kwargs['sockets'] = self.watcher._get_sockets_fds()
@@ -180,6 +181,9 @@ class Process(object):
             args = shlex.split(bytestring(cmd)) + args
         else:
             args = shlex.split(bytestring(cmd))
+
+        for k, v in self.env.items():
+            self.env[k] = replace_gnu_args(v, **format_kwargs)
 
         logger.debug("process args: %s", args)
         return args
