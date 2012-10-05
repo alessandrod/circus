@@ -9,12 +9,10 @@ import re
 import sys
 import shlex
 import time
-from zmq import ssh
 from ConfigParser import (ConfigParser, MissingSectionHeaderError,
                           ParsingError, DEFAULTSECT)
 
-from psutil.error import AccessDenied, NoSuchProcess
-from psutil import Process
+import warnings
 
 
 # default endpoints
@@ -125,6 +123,9 @@ def get_info(process=None, interval=0, with_childs=False):
 
     If process is None, will return the information about the current process.
     """
+    from psutil.error import AccessDenied, NoSuchProcess
+    from psutil import Process
+
     if process is None or isinstance(process, int):
         if process is None:
             pid = os.getpid()
@@ -578,6 +579,7 @@ class StrictConfigParser(ConfigParser):
 
 
 def get_connection(socket, endpoint, ssh_server=None, ssh_keyfile=None):
+    from zmq import ssh
     if ssh_server is None:
         socket.connect(endpoint)
     else:
