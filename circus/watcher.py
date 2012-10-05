@@ -164,7 +164,7 @@ class Watcher(object):
                  singleton=False, use_sockets=False, copy_env=False,
                  copy_path=False, max_age=0, max_age_variance=30,
                  hooks=None, respawn=True, autostart=True, on_demand=False,
-                 virtualenv=None, **options):
+                 virtualenv=None, _exec=False, **options):
         self.name = name
         self.use_sockets = use_sockets
         self.on_demand = on_demand
@@ -196,6 +196,7 @@ class Watcher(object):
         self.hooks = self._resolve_hooks(hooks)
         self.respawn = respawn
         self.autostart = autostart
+        self._exec = _exec
         self.loop = loop or ioloop.IOLoop.instance()
 
         if singleton and self.numprocesses not in (0, 1):
@@ -443,7 +444,8 @@ class Watcher(object):
                                   shell=self.shell, uid=self.uid, gid=self.gid,
                                   env=self.env, rlimits=self.rlimits,
                                   executable=self.executable,
-                                  use_fds=self.use_sockets, watcher=self)
+                                  use_fds=self.use_sockets, watcher=self,
+                                  _exec=self._exec)
 
                 # stream stderr/stdout if configured
                 if self.stdout_redirector is not None:

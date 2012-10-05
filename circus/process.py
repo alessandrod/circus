@@ -81,7 +81,7 @@ class Process(object):
     """
     def __init__(self, wid, cmd, args=None, working_dir=None, shell=False,
                  uid=None, gid=None, env=None, rlimits=None, executable=None,
-                 use_fds=False, watcher=None, spawn=True):
+                 use_fds=False, watcher=None, spawn=True, _exec=False):
 
         self.wid = wid
         self.cmd = cmd
@@ -95,12 +95,16 @@ class Process(object):
         self.executable = executable
         self.use_fds = use_fds
         self.watcher = watcher
+        self._exec = _exec
 
         if spawn:
             self.spawn()
 
     def spawn(self):
         args = self.format_args()
+        if self._exec:
+            # good bye
+            os.execv(args[0], args)
 
         def preexec_fn():
             os.setsid()
