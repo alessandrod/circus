@@ -255,7 +255,8 @@ class Arbiter(object):
 
     def _stop(self):
         if self.alive:
-            self.stop_watchers(stop_alive=True)
+            import gevent
+            gevent.spawn(self.stop_watchers, stop_alive=True)
 
         self.loop.stop()
 
