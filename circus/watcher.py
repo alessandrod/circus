@@ -394,6 +394,10 @@ class Watcher(object):
                                        "time": time.time()})
                     self.kill_process(process)
 
+        for process in self.processes.values():
+            if process.status in (DEAD_OR_ZOMBIE, UNEXISTING):
+                self.reap_process(process.pid)
+
         if self.respawn and len(self.processes) < self.numprocesses:
             self.spawn_processes()
 
