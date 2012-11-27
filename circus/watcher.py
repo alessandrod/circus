@@ -326,7 +326,17 @@ class Watcher(object):
         if not status:
             while True:
                 try:
-                    _, status = os.waitpid(pid, os.WNOHANG)
+                    exited, status = os.waitpid(pid, os.WNOHANG)
+                    if exited == 0 and process.status not in (DEAD_OR_ZOMBIE,
+                            UNEXISTING):
+                        # when waitpid returns 0 (nothing exited) and
+                        # process.status says the process is alive, we need to
+                        # put it back in self.processes else we can potentially
+                        # leave processes open when we exit. This can happen for
+                        # example when we SIGTERM the process and that doesn't
+                        # make it stop.
+                        self.processes[pid] = process
+                        return
                 except OSError as e:
                     if e.errno == errno.EAGAIN:
                         time.sleep(0.001)
@@ -590,7 +600,10 @@ class Watcher(object):
             self.kill_processes(signal.SIGTERM)
             self.reap_processes()
 
-        self.kill_processes(signal.SIGKILL)
+        if self.get_active_processes():
+            self.kill_processes(signal.SIGKILL)
+            time.sleep(0.1)
+            self.reap_processes()
 
         if self.evpub_socket is not None:
             self.notify_event("stop", {"time": time.time()})
