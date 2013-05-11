@@ -260,7 +260,10 @@ class Process(object):
         children = dict([(child.pid, child)
                          for child in self._worker.get_children()])
 
-        children[pid].send_signal(signum)
+        try:
+            children[pid].send_signal(signum)
+        except KeyError:
+            raise NoSuchProcess(pid)
 
     @debuglog
     def send_signal_children(self, signum):
